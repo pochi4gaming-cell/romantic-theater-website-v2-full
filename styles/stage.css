@@ -1,0 +1,64 @@
+
+:root{
+  --bg:#fff7fb; --accent:#ff7fbf; --muted:#6b6b6b; --gold:#d4af37;
+  --stage:#fff; --shadow: rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Superscopic,Superscopic,Superscopic;background:var(--bg);color:#222;min-height:100vh;display:flex;align-items:center;justify-content:center}
+#app{width:100%;max-width:1100px;padding:24px;position:relative;z-index:1000}
+/* Basic curtain styles - overridden by 3D velvet curtain below */
+.stage{background:var(--stage);padding:2rem;border-radius:16px;box-shadow:0 8px 24px var(--shadow);text-align:center}
+.playbill{margin-top:1rem;padding:.8rem 1.2rem;background:var(--gold);border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.hidden{display:none}
+@keyframes pulse-btn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* 🎭 3D Velvet Curtain */
+.curtain {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 1;
+
+  /* Deep velvet red with rich folds */
+  background: 
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.12), rgba(0,0,0,0) 60%),
+      radial-gradient(circle at 70% 40%, rgba(255,255,255,0.10), rgba(0,0,0,0) 70%),
+      linear-gradient(90deg,
+        rgba(0,0,0,0.35),
+        rgba(139,0,36,1) 20%,
+        rgba(160,0,44,1) 50%,
+        rgba(139,0,36,1) 80%,
+        rgba(0,0,0,0.35)
+      );
+
+  background-size: cover;
+  background-position: center;
+
+  /* Depth / fabric effect */
+  box-shadow:
+      inset 12px 0 40px rgba(0,0,0,0.5),
+      inset -12px 0 40px rgba(0,0,0,0.5),
+      0 0 50px rgba(0,0,0,0.4);
+
+  /* Smooth opening animation */
+  transition: transform 1.2s cubic-bezier(.58,.01,.38,1);
+}
+
+/* left + right curtain positions */
+.curtain.left { left: 0; transform: translateX(0); }
+.curtain.right { right: 0; transform: translateX(0); }
+
+/* When the show begins — slide open */
+#curtain-overlay.curtain-open .curtain.left { 
+  transform: translateX(-100%) !important; 
+}
+#curtain-overlay.curtain-open .curtain.right { 
+  transform: translateX(100%) !important; 
+}
+
