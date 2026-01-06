@@ -37,7 +37,7 @@ export function initCatchGame(opts={}) {
   let caughtCount=0;
   let spawned=0;
   let spawnInterval = null;
-  const maxSpawn = 12;
+  const maxSpawn = 9;
   
   // Create start button
   const startBtn = document.createElement('button');
@@ -163,6 +163,14 @@ export function initCatchGame(opts={}) {
     node.className='piece';
     node.dataset.itemName = item.name || item.image;
     
+    // Set explicit dimensions so it doesn't take over the screen
+    node.style.width = '80px';
+    node.style.height = '80px';
+    node.style.minWidth = '80px';
+    node.style.minHeight = '80px';
+    node.style.maxWidth = '80px';
+    node.style.maxHeight = '80px';
+    
     // Create img element for caught item
     const img = document.createElement('img');
     img.src = item.image;
@@ -174,7 +182,13 @@ export function initCatchGame(opts={}) {
     
     node.addEventListener('click', ()=>showCompliment(item));
     caughtList.appendChild(node);
-    if(caughtCount >= 6){
+    if(caughtCount >= 9){
+      // Stop spawning when 9 items are caught
+      if(spawnInterval) {
+        clearInterval(spawnInterval);
+        spawnInterval = null;
+        startBtn.textContent = 'Finished!';
+      }
       // optional early completion
       if(opts.onComplete) setTimeout(()=>opts.onComplete(),600);
     }

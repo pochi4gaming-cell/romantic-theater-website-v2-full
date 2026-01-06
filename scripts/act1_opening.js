@@ -18,7 +18,6 @@ export function initAct1(opts = {}) {
 
     // curtain shake before opening
     shakeCurtains();
-
     // Open curtain right after shake (250ms)
     setTimeout(() => {
       const curtain = document.getElementById('curtain-overlay');

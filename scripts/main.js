@@ -42,7 +42,7 @@ app.innerHTML = `
   <section id="act-3" class="act hidden">
     <div class="stage-header">Act III — Reasons I Like You</div>
     <div id="script-viewer" class="script-viewer"></div>
-    <div class="controls"><button id="prev-page" class="small">Prev</button><button id="next-page" class="small">Next</button></div>
+    <div class="controls"><button id="act3-continue" class="small">Continue</button></div>
   </section>
 
   <section id="act-4" class="act hidden">
