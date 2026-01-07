@@ -2,7 +2,7 @@ export function initMatchGame(opts={}) {
   const board = document.querySelector(opts.boardSelector || '#match-board');
   if(!board) return;
   board.innerHTML = '';
-  const items = ['🐶','🐱','🦊','💖','🐶','🐱','🦊','💖'];
+  const items = ['🐶','🐱','🐼','💙','🐶','🐱','🐼','💙'];
   const shuffled = items.sort(()=>Math.random()-0.5);
   shuffled.forEach((it,i)=>{
     const c = document.createElement('div');

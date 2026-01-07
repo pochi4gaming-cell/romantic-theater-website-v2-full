@@ -1,7 +1,7 @@
 
 :root{
-  --bg:#fff7fb; --accent:#ff7fbf; --muted:#6b6b6b; --gold:#d4af37;
-  --stage:#fff; --shadow: rgba(0,0,0,0.08);
+  --bg:#8CC0DE; --accent:#ff7fbf; --muted:#6b6b6b; --gold:#d4af37;
+  --stage:#FAF0D7; --shadow: rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -17,37 +17,22 @@ body{margin:0;font-family:Superscopic,Superscopic,Superscopic;background:var(--b
   100% { transform: scale(1); }
 }
 
-/* 🎭 3D Velvet Curtain */
+/* 🎭 Curtain Images */
 .curtain {
   position: fixed;
   top: 0;
   bottom: 0;
   width: 50%;
+  height: 100vh;
   z-index: 1;
-
-  /* Deep velvet red with rich folds */
-  background: 
-      radial-gradient(circle at 30% 20%, rgba(255,255,255,0.12), rgba(0,0,0,0) 60%),
-      radial-gradient(circle at 70% 40%, rgba(255,255,255,0.10), rgba(0,0,0,0) 70%),
-      linear-gradient(90deg,
-        rgba(0,0,0,0.35),
-        rgba(139,0,36,1) 20%,
-        rgba(160,0,44,1) 50%,
-        rgba(139,0,36,1) 80%,
-        rgba(0,0,0,0.35)
-      );
-
-  background-size: cover;
-  background-position: center;
-
-  /* Depth / fabric effect */
-  box-shadow:
-      inset 12px 0 40px rgba(0,0,0,0.5),
-      inset -12px 0 40px rgba(0,0,0,0.5),
-      0 0 50px rgba(0,0,0,0.4);
-
+  object-fit: cover;
+  object-position: center;
+  
   /* Smooth opening animation */
   transition: transform 1.2s cubic-bezier(.58,.01,.38,1);
+  
+  /* Depth / fabric effect */
+  box-shadow: 0 0 50px rgba(0,0,0,0.4);
 }
 
 /* left + right curtain positions */
