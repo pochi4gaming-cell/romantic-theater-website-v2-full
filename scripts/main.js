@@ -47,7 +47,7 @@ app.innerHTML = `
 
   <section id="act-4" class="act hidden">
     <div class="stage">
-      <h1 class="final-question">So… SOOO EHEHHEHEHE JOWA?</h1>
+      <h1 class="final-question">Can I be yours, please?</h1>
       <div class="final-buttons">
         <button id="yes-btn" class="yes">Yes!</button>
         <button id="no-btn" class="no">Think Again 👀</button>
@@ -67,6 +67,41 @@ const acts = {
 function showAct(actEl){
   Object.values(acts).forEach(a=>a.classList.add('hidden'));
   actEl.classList.remove('hidden');
+  
+  // Reset Act 2 styles when switching away from it
+  if(actEl.id !== 'act-2') {
+    const act2 = document.getElementById('act-2');
+    if(act2) {
+      act2.style.display = '';
+      act2.style.flexDirection = '';
+      act2.style.justifyContent = '';
+      act2.style.minHeight = '';
+    }
+  }
+  
+  // Act 1 should be centered, Act 4 should also be centered vertically
+  if(actEl.id === 'act-1'){
+    document.body.classList.remove('act-scrollable');
+  } else if(actEl.id === 'act-4') {
+    // Center Act 4 vertically
+    document.body.classList.remove('act-scrollable');
+    actEl.style.display = 'flex';
+    actEl.style.flexDirection = 'column';
+    actEl.style.justifyContent = 'center';
+    actEl.style.minHeight = '100vh';
+  } else {
+    document.body.classList.add('act-scrollable');
+    // Reset Act 4 styles if switching away
+    if(actEl.id !== 'act-4') {
+      const act4 = document.getElementById('act-4');
+      if(act4) {
+        act4.style.display = '';
+        act4.style.flexDirection = '';
+        act4.style.justifyContent = '';
+        act4.style.minHeight = '';
+      }
+    }
+  }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -90,7 +125,7 @@ initAct1({
 });
 
 // init scene flow inside Act II
-function initSceneFlow(){
+async function initSceneFlow(){
   // show scene 1 initially
   showScene('scene-1');
   
@@ -114,10 +149,23 @@ function initSceneFlow(){
       s2Btn.disabled = false;
     }
   });
+  
+  // Load compliments from JSON file
+  let compliments = [];
+  try {
+    const response = await fetch('./data/compliments.json');
+    if(response.ok) {
+      compliments = await response.json();
+    }
+  } catch(error) {
+    console.warn('Failed to load compliments.json, using fallback:', error);
+  }
+  
   initCatchGame({
     areaSelector:'#catch-area', 
     basketSelector:'#basket', 
-    caughtListSelector:'#caught-list', 
+    caughtListSelector:'#caught-list',
+    compliments: compliments.length > 0 ? compliments : undefined,
     onComplete: ()=>{
       s3Btn.disabled = false;
     }
@@ -140,7 +188,22 @@ function initSceneFlow(){
 
 function showScene(id){
   document.querySelectorAll('#act-2 .scene').forEach(s=>s.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+  const sceneEl = document.getElementById(id);
+  sceneEl.classList.remove('hidden');
+  
+  // Center Act 2 vertically when Scene 2 or Scene 3 is shown
+  if(id === 'scene-2' || id === 'scene-3') {
+    document.getElementById('act-2').style.display = 'flex';
+    document.getElementById('act-2').style.flexDirection = 'column';
+    document.getElementById('act-2').style.justifyContent = 'center';
+    document.getElementById('act-2').style.minHeight = '100vh';
+  } else {
+    // Reset for Scene 1
+    document.getElementById('act-2').style.display = '';
+    document.getElementById('act-2').style.flexDirection = '';
+    document.getElementById('act-2').style.justifyContent = '';
+    document.getElementById('act-2').style.minHeight = '';
+  }
 }
 
 // init Act 4 wiring

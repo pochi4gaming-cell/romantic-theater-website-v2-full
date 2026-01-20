@@ -4,12 +4,20 @@
   --stage:#FAF0D7; --shadow: rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:Superscopic,Superscopic,Superscopic;background:var(--bg);color:#222;min-height:100vh;display:flex;align-items:center;justify-content:center}
-#app{width:100%;max-width:1100px;padding:24px;position:relative;z-index:1000}
+img,video,iframe{max-width:100%;height:auto}
+html,body{height:100%;overflow-x:hidden;width:100%;position:relative}
+body{margin:0;font-family:Superscopic,Superscopic,Superscopic;background:var(--bg);color:#222;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:0;overflow-x:hidden}
+body.act-scrollable{align-items:flex-start;padding-top:clamp(8px, 2vw, 16px)}
+#app{width:100%;max-width:1100px;padding:clamp(8px, 2vw, 24px);position:relative;z-index:1000;box-sizing:border-box}
+@media (max-width: 768px) {
+  #app{padding:clamp(4px, 1.5vw, 12px)}
+}
 /* Basic curtain styles - overridden by 3D velvet curtain below */
-.stage{background:var(--stage);padding:2rem;border-radius:16px;box-shadow:0 8px 24px var(--shadow);text-align:center}
-.playbill{margin-top:1rem;padding:.8rem 1.2rem;background:var(--gold);border-radius:8px;border:none;cursor:pointer;font-weight:700}
+.act{width:100%;max-width:100%;overflow-x:hidden;box-sizing:border-box}
+.stage{background:var(--stage);padding:clamp(1rem, 4vw, 2rem);border-radius:16px;box-shadow:0 8px 24px var(--shadow);text-align:center;width:100%;max-width:100%;box-sizing:border-box}
+.title{font-size:clamp(1.8rem, 6vw, 2.5rem);word-wrap:break-word;line-height:1.2;margin:0 0 clamp(0.5rem, 2vw, 1rem);padding:0 clamp(8px, 2vw, 16px)}
+.subtitle{font-size:clamp(1.2rem, 4vw, 1.8rem);display:block;margin-top:clamp(0.25rem, 1vw, 0.5rem)}
+.playbill{margin-top:clamp(0.75rem, 2vw, 1rem);padding:clamp(0.6rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.2rem);background:var(--gold);border-radius:8px;border:none;cursor:pointer;font-weight:700;font-size:clamp(0.9rem, 2.5vw, 1rem);min-height:44px}
 .hidden{display:none}
 @keyframes pulse-btn {
   0% { transform: scale(1); }

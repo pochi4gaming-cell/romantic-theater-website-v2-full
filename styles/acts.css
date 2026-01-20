@@ -1,37 +1,72 @@
 
-.stage-header{font-weight:700;margin-bottom:1rem;color:var(--muted);text-align:center}
-.scene{background:#FAF0D7;padding:1rem;border-radius:12px;width:100%;box-shadow:0 6px 20px rgba(0,0,0,.06);margin:12px 0}
-.puzzle{display:flex;flex-direction:column;padding:10px;min-height:220px;width:100%}
+.stage-header{font-weight:700;margin-bottom:clamp(0.75rem, 2vw, 1rem);color:var(--muted);text-align:center;font-size:clamp(1rem, 3vw, 1.2rem);padding:0 clamp(8px, 2vw, 16px);word-wrap:break-word}
+.scene{background:#FAF0D7;padding:clamp(0.75rem, 2vw, 1rem);border-radius:12px;width:100%;max-width:100%;box-shadow:0 6px 20px rgba(0,0,0,.06);margin:clamp(8px, 2vw, 12px) 0;overflow-x:hidden}
+/* Center Scene 2 vertically when visible and match Act 1 styling */
+#scene-2:not(.hidden){
+  max-width:1000px;
+  margin-left:auto;
+  margin-right:auto;
+  width:100%;
+}
+/* Center Scene 3 vertically when visible and match Act 1 styling */
+#scene-3:not(.hidden){
+  max-width:1100px;
+  margin-left:auto;
+  margin-right:auto;
+  width:100%;
+}
+/* Center Act 4 vertically when visible and match Act 1 styling */
+#act-4:not(.hidden){
+  max-width:1000px;
+  margin-left:auto;
+  margin-right:auto;
+  width:100%;
+}
+.scene h2{font-size:clamp(1.1rem, 4vw, 1.5rem);word-wrap:break-word;padding:0 clamp(4px, 1vw, 8px);margin-bottom:clamp(0.5rem, 2vw, 0.75rem)}
+.puzzle{display:flex;flex-direction:column;padding:clamp(8px, 2vw, 10px);min-height:220px;width:100%;max-width:100%;overflow-x:hidden}
 .puzzle-board{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(4px, 1vw, 8px);margin-bottom:20px;max-width:600px;margin-left:auto;margin-right:auto;width:100%}
 .puzzle-bank{display:flex;flex-wrap:wrap;gap:clamp(6px, 1.5vw, 12px);justify-content:center;padding:clamp(8px, 2vw, 16px);background-color:rgba(255,255,255,0.3);border-radius:12px;max-width:600px;margin-left:auto;margin-right:auto;width:100%}
-.puzzle-piece{transition:transform 0.2s ease, box-shadow 0.2s ease}
+.puzzle-piece{transition:transform 0.2s ease, box-shadow 0.2s ease;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .puzzle-slot{transition:background-color 0.2s ease}
+@media (max-width: 768px) {
+  .puzzle-piece{width:clamp(80px, 12vw, 100px) !important;height:clamp(80px, 12vw, 100px) !important;min-width:80px !important;min-height:80px !important}
+}
 .piece{background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;padding:18px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.06)}
-.match-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:10px;min-height:220px}
-.card{background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:2rem;padding:12px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.06)}
-#catch-area{position:relative;height:260px;border-radius:12px;border:2px dashed rgba(0,0,0,.05);overflow:hidden;margin-bottom:12px}
+.match-board{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(14px, 3vw, 24px);padding:clamp(16px, 4vw, 24px);min-height:220px;width:100%;max-width:600px;margin-left:auto;margin-right:auto}
+.card{background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:clamp(2.5rem, 5vw, 3.5rem);padding:clamp(18px, 4vw, 28px);min-height:clamp(80px, 15vw, 120px);cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.06)}
+#catch-area{position:relative;height:clamp(200px, 35vw, 260px);border-radius:12px;border:2px dashed rgba(0,0,0,.05);overflow:hidden;margin-bottom:12px;width:100%;max-width:100%}
 .basket{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);width:120px;height:80px;border-radius:12px;background:linear-gradient(180deg,#fff,#ffeef6);display:flex;align-items:center;justify-content:center;font-size:2rem;box-shadow:0 6px 18px rgba(0,0,0,.08)}
 .falling{position:absolute;top:-40px;font-size:1.6rem;cursor:pointer;user-select:none;transition:transform .12s linear;display:flex;align-items:center;justify-content:center;width:40px;height:40px}
 .caught-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:8px}
-.script-viewer{background:linear-gradient(180deg,#fffdf6,#fff1f4);padding:18px;border-radius:8px;max-width:700px;margin:0 auto;min-height:160px;font-family:Courier,monospace;white-space:pre-wrap;text-align:left}
-.final-question{font-size:1.6rem}
-.final-buttons{display:flex;gap:10px;justify-content:center;margin-top:12px}
-.yes{background:linear-gradient(90deg,#ff7fbf,#ff92c9);padding:.8rem 1.2rem;border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer}
-.no{background:transparent;border:2px solid #ccc;padding:.7rem 1rem;border-radius:10px;cursor:pointer}
-.final-msg{margin-top:12px;padding:12px;border-radius:8px;background:linear-gradient(180deg,#fff,#fff8f0);box-shadow:0 6px 18px rgba(0,0,0,.06);text-align:center}
+.script-viewer{background:linear-gradient(180deg,#fffdf6,#fff1f4);padding:clamp(12px, 3vw, 18px);border-radius:8px;max-width:700px;width:100%;margin:0 auto;min-height:160px;font-family:Courier,monospace;white-space:pre-wrap;text-align:left;overflow-wrap:break-word;word-wrap:break-word}
+.final-question{font-size:clamp(1.2rem, 4vw, 1.6rem);word-wrap:break-word;padding:0 clamp(8px, 2vw, 16px);line-height:1.3}
+.final-buttons{display:flex;gap:clamp(8px, 2vw, 10px);justify-content:center;margin-top:12px;flex-wrap:wrap;padding:0 clamp(8px, 2vw, 16px)}
+.yes{background:linear-gradient(90deg,#ff7fbf,#ff92c9);padding:clamp(0.6rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.2rem);border:none;border-radius:10px;color:white;font-weight:700;cursor:pointer;font-size:clamp(0.9rem, 2.5vw, 1rem);min-height:44px;flex:0 1 auto}
+.no{background:transparent;border:2px solid #ccc;padding:clamp(0.6rem, 2vw, 0.7rem) clamp(0.9rem, 2.5vw, 1rem);border-radius:10px;cursor:pointer;font-size:clamp(0.9rem, 2.5vw, 1rem);min-height:44px;flex:0 1 auto}
+.final-msg{margin-top:12px;padding:clamp(10px, 2vw, 12px);border-radius:8px;background:linear-gradient(180deg,#fff,#fff8f0);box-shadow:0 6px 18px rgba(0,0,0,.06);text-align:center;word-wrap:break-word;overflow-wrap:break-word}
 .controls{display:flex;gap:8px;justify-content:center;margin-top:12px}
 .small{font-size:0.9rem;padding:.5rem .75rem}
 .small:disabled{opacity:0.5;cursor:not-allowed;pointer-events:none}
 
-/* Mobile and tablet optimizations for puzzle */
+/* Mobile and tablet optimizations */
 @media (max-width: 768px) {
-  .puzzle{padding:8px;min-height:auto}
-  .puzzle-board{gap:3px;margin-bottom:16px}
-  .puzzle-bank{gap:6px;padding:10px}
-  .puzzle-reset{padding:10px 20px;font-size:1rem;min-height:44px}
+  body.act-scrollable{padding-top:clamp(4px, 1vw, 8px)}
+  .stage{padding:clamp(0.75rem, 3vw, 1.5rem)}
+  .scene{padding:clamp(0.5rem, 2vw, 0.75rem);margin:clamp(6px, 1.5vw, 10px) 0}
+  .puzzle{padding:6px;min-height:auto}
+  .puzzle-board{gap:3px;margin-bottom:12px}
+  .puzzle-bank{gap:6px;padding:8px}
+  .puzzle-reset{padding:10px 20px;font-size:1rem;min-height:44px;width:auto;max-width:100%}
+  .match-board{gap:clamp(12px, 3vw, 18px);padding:clamp(14px, 3vw, 20px);max-width:100%}
+  .card{font-size:clamp(2rem, 4vw, 2.8rem);padding:clamp(16px, 3vw, 24px);min-height:clamp(70px, 12vw, 100px)}
+  .final-question{font-size:clamp(1.2rem, 4vw, 1.6rem);padding:0 clamp(8px, 2vw, 16px)}
+  .final-buttons{flex-wrap:wrap;gap:8px}
+  .yes,.no{padding:clamp(0.6rem, 2vw, 0.8rem) clamp(1rem, 3vw, 1.2rem);font-size:clamp(0.9rem, 2.5vw, 1rem)}
 }
 
 @media (max-width: 480px) {
   .puzzle-board{gap:2px}
-  .puzzle-bank{gap:4px;padding:8px}
+  .puzzle-bank{gap:4px;padding:6px}
+  .stage-header{font-size:0.95rem}
+  h2{font-size:clamp(1rem, 4vw, 1.2rem);padding:0 8px}
 }

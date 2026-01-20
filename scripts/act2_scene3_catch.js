@@ -8,22 +8,71 @@ export function initCatchGame(opts={}) {
   }
   caughtList.innerHTML='';
 
-  // control basket with mouse
-  area.addEventListener('mousemove', (e)=>{
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  let isDragging = false;
+  
+  // control basket with mouse (desktop)
+  if(!isTouchDevice) {
+    area.addEventListener('mousemove', (e)=>{
+      const rect = area.getBoundingClientRect();
+      let x = e.clientX - rect.left;
+      if(x < 40) x = 40; if(x > rect.width-40) x = rect.width-40;
+      basket.style.left = (x-60)+'px';
+    });
+  }
+  
+  // control basket with touch (mobile/tablet)
+  if(isTouchDevice) {
+    area.style.touchAction = 'pan-y'; // Allow vertical scrolling but handle horizontal touch
+    basket.style.cursor = 'grab';
+    basket.style.userSelect = 'none';
+    basket.style.webkitUserSelect = 'none';
+    
+    // Allow dragging anywhere in the catch area
+    area.addEventListener('touchstart', (e) => {
+      if(e.target.closest('.falling')) return; // Don't interfere with falling items
+      isDragging = true;
+      basket.style.opacity = '0.9';
+      updateBasketPosition(e.touches[0]);
+    }, { passive: false });
+    
+    area.addEventListener('touchmove', (e) => {
+      if(isDragging) {
+        e.preventDefault();
+        updateBasketPosition(e.touches[0]);
+      }
+    }, { passive: false });
+    
+    area.addEventListener('touchend', () => {
+      isDragging = false;
+      basket.style.opacity = '1';
+    }, { passive: true });
+    
+    area.addEventListener('touchcancel', () => {
+      isDragging = false;
+      basket.style.opacity = '1';
+    }, { passive: true });
+  }
+  
+  function updateBasketPosition(touch) {
     const rect = area.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    if(x < 40) x = 40; if(x > rect.width-40) x = rect.width-40;
+    let x = touch.clientX - rect.left;
+    if(x < 40) x = 40; 
+    if(x > rect.width-40) x = rect.width-40;
     basket.style.left = (x-60)+'px';
-  });
+  }
 
   // Use PNG images instead of emojis
   // You can customize these paths to your PNG files
   const things = opts.items || [
     { image: 'greengrape.png', name: 'Green Grape' },
+    { image: 'tulip.png', name: 'Tulip' },
+    { image: 'ice-cream.png', name: 'Ice Cream' },
+    { image: 'ice-cream.png', name: 'Ice Cream' },
+    { image: 'tulip.png', name: 'Tulip' },
     { image: 'greengrape.png', name: 'Green Grape' },
-    { image: 'greengrape.png', name: 'Green Grape' },
-    { image: 'greengrape.png', name: 'Green Grape' },
-    { image: 'greengrape.png', name: 'Green Grape' },
+    { image: 'tulip.png', name: 'Tulip' },
+    { image: 'ice-cream.png', name: 'Ice Cream' },
     { image: 'greengrape.png', name: 'Green Grape' }
   ];
   const compliments = (opts.compliments) ? opts.compliments : [

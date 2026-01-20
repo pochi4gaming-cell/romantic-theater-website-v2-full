@@ -11,9 +11,12 @@ export function initScene1(opts = {}) {
   let pieces = [];
   let slots = [];
   let draggedPiece = null;
-  let selectedPiece = null; // For touch interactions
+  let touchDraggedPiece = null; // For touch drag
   let touchStartY = null;
   let touchStartX = null;
+  let touchOffsetX = null;
+  let touchOffsetY = null;
+  let dragGhost = null; // Visual element that follows touch
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   
   // Create puzzle board (target area)
@@ -58,42 +61,7 @@ export function initScene1(opts = {}) {
       }
     });
     
-    // Touch support: tap to place selected piece
-    slot.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      if(selectedPiece) {
-        const existingPiece = slot.querySelector('.puzzle-piece');
-        if(existingPiece && existingPiece !== selectedPiece) {
-          returnPieceToBank(existingPiece);
-        }
-        placePiece(selectedPiece, slot);
-        selectedPiece = null;
-        updateSelectedState();
-      } else {
-        // Highlight slot on touch
-        slot.style.backgroundColor = 'rgba(255,127,191,0.2)';
-      }
-    }, { passive: false });
-    
-    slot.addEventListener('touchend', () => {
-      if(!selectedPiece) {
-        slot.style.backgroundColor = 'rgba(255,255,255,0.5)';
-      }
-    });
-    
-    // Click support for tablets/desktop touch
-    slot.addEventListener('click', (e) => {
-      if(selectedPiece && isTouchDevice) {
-        e.preventDefault();
-        const existingPiece = slot.querySelector('.puzzle-piece');
-        if(existingPiece && existingPiece !== selectedPiece) {
-          returnPieceToBank(existingPiece);
-        }
-        placePiece(selectedPiece, slot);
-        selectedPiece = null;
-        updateSelectedState();
-      }
-    });
+    // Touch drag-and-drop handles slot interactions automatically via piece touch handlers
     
     slots.push(slot);
     puzzleBoard.appendChild(slot);
@@ -134,7 +102,7 @@ export function initScene1(opts = {}) {
       color: #555;
       line-height: 1.4;
     `;
-    mobileHint.textContent = '💡 Tap a piece to select it, then tap a slot to place it. Tap a placed piece to remove it.';
+    mobileHint.textContent = '💡 Touch and hold a piece to drag it. Drag to a slot to place it, or drag to the bank to remove it.';
     container.insertBefore(mobileHint, puzzleBoard);
   }
   
@@ -177,10 +145,9 @@ export function initScene1(opts = {}) {
     piece.className = 'puzzle-piece';
     piece.dataset.originalIndex = originalIndex;
     piece.draggable = !isTouchDevice; // Disable drag on touch devices
-    piece.style.width = 'clamp(80px, 12vw, 100px)';
-    piece.style.height = 'clamp(80px, 12vw, 100px)';
-    piece.style.minWidth = 'clamp(80px, 12vw, 100px)';
-    piece.style.minHeight = 'clamp(80px, 12vw, 100px)';
+    // Set base size - CSS will override on mobile
+    piece.style.width = '100px';
+    piece.style.height = '100px';
     piece.style.border = '2px solid rgba(0,0,0,0.1)';
     piece.style.borderRadius = '8px';
     piece.style.cursor = isTouchDevice ? 'pointer' : 'grab';
@@ -190,8 +157,10 @@ export function initScene1(opts = {}) {
     piece.style.display = 'flex';
     piece.style.alignItems = 'center';
     piece.style.justifyContent = 'center';
-    piece.style.touchAction = 'manipulation'; // Prevent double-tap zoom
+    piece.style.touchAction = 'none'; // Full control over touch events
     piece.style.userSelect = 'none';
+    piece.style.webkitUserSelect = 'none';
+    piece.style.webkitTouchCallout = 'none'; // Prevent iOS callout menu
     
     // Create img element for the piece
     const img = document.createElement('img');
@@ -217,80 +186,163 @@ export function initScene1(opts = {}) {
       draggedPiece = null;
     });
     
-    // Touch handlers for mobile/tablet
+    // Touch drag handlers for mobile/tablet - mimics desktop drag-and-drop
     piece.addEventListener('touchstart', (e) => {
-      e.stopPropagation();
-      touchStartY = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
+      if(!isTouchDevice) return;
       
-      // If piece is in bank, select it for placement
-      if(piece.parentElement === bank) {
-        selectedPiece = piece;
-        updateSelectedState();
-        piece.style.transform = 'scale(1.1)';
-        piece.style.boxShadow = '0 6px 15px rgba(255,127,191,0.5)';
-      }
-    }, { passive: true });
+      e.stopPropagation();
+      const touch = e.touches[0];
+      touchStartY = touch.clientY;
+      touchStartX = touch.clientX;
+      
+      // Get piece position relative to touch point
+      const rect = piece.getBoundingClientRect();
+      touchOffsetX = touch.clientX - rect.left;
+      touchOffsetY = touch.clientY - rect.top;
+      
+      touchDraggedPiece = piece;
+      piece.style.opacity = '0.6';
+      piece.style.transition = 'none'; // Disable transition during drag
+      
+      // Hide mobile hint on first drag
+      hideMobileHint();
+      
+      // Create a ghost element that follows the touch
+      dragGhost = piece.cloneNode(true);
+      dragGhost.style.position = 'fixed';
+      dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
+      dragGhost.style.top = (touch.clientY - touchOffsetY) + 'px';
+      dragGhost.style.width = rect.width + 'px';
+      dragGhost.style.height = rect.height + 'px';
+      dragGhost.style.pointerEvents = 'none';
+      dragGhost.style.zIndex = '1000';
+      dragGhost.style.opacity = '0.8';
+      dragGhost.style.transform = 'scale(1.1)';
+      dragGhost.style.boxShadow = '0 8px 20px rgba(0,0,0,0.3)';
+      document.body.appendChild(dragGhost);
+      
+      e.preventDefault(); // Prevent scrolling
+    }, { passive: false });
     
     piece.addEventListener('touchmove', (e) => {
-      // If moved significantly, cancel selection (user is scrolling)
-      if(touchStartY !== null && touchStartX !== null) {
-        const deltaY = Math.abs(e.touches[0].clientY - touchStartY);
-        const deltaX = Math.abs(e.touches[0].clientX - touchStartX);
-        if(deltaY > 10 || deltaX > 10) {
-          if(selectedPiece === piece) {
-            selectedPiece = null;
-            updateSelectedState();
-            piece.style.transform = 'scale(1)';
-            piece.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-          }
+      if(!isTouchDevice || !touchDraggedPiece || touchDraggedPiece !== piece) return;
+      
+      const touch = e.touches[0];
+      
+      // Update ghost position
+      if(dragGhost) {
+        dragGhost.style.left = (touch.clientX - touchOffsetX) + 'px';
+        dragGhost.style.top = (touch.clientY - touchOffsetY) + 'px';
+      }
+      
+      // Check which slot we're over
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slotBelow = elementBelow?.closest('.puzzle-slot');
+      
+      // Highlight slot if hovering
+      slots.forEach(slot => {
+        if(slot === slotBelow && !slot.querySelector('.puzzle-piece')) {
+          slot.style.backgroundColor = 'rgba(255,127,191,0.3)';
+        } else {
+          slot.style.backgroundColor = 'rgba(255,255,255,0.5)';
         }
+      });
+      
+      // Highlight bank if hovering
+      const bankBelow = elementBelow?.closest('.puzzle-bank');
+      if(bankBelow === bank) {
+        bank.style.backgroundColor = 'rgba(255,127,191,0.2)';
+      } else {
+        bank.style.backgroundColor = 'rgba(255,255,255,0.3)';
+      }
+      
+      e.preventDefault(); // Prevent scrolling while dragging
+    }, { passive: false });
+    
+    piece.addEventListener('touchend', (e) => {
+      if(!isTouchDevice || !touchDraggedPiece || touchDraggedPiece !== piece) {
+        touchDraggedPiece = null;
+        return;
+      }
+      
+      const touch = e.changedTouches[0];
+      
+      // Find what we're dropping on
+      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+      const slotBelow = elementBelow?.closest('.puzzle-slot');
+      const bankBelow = elementBelow?.closest('.puzzle-bank');
+      
+      // Reset piece opacity
+      piece.style.opacity = '1';
+      piece.style.transition = 'transform 0.2s, box-shadow 0.2s';
+      
+      // Remove ghost
+      if(dragGhost) {
+        dragGhost.remove();
+        dragGhost = null;
+      }
+      
+      // Reset highlights
+      slots.forEach(slot => {
+        slot.style.backgroundColor = 'rgba(255,255,255,0.5)';
+      });
+      bank.style.backgroundColor = 'rgba(255,255,255,0.3)';
+      
+      // Handle drop
+      if(slotBelow && !slotBelow.querySelector('.puzzle-piece')) {
+        // Drop on empty slot
+        placePiece(piece, slotBelow);
+      } else if(bankBelow === bank && piece.parentElement?.classList.contains('puzzle-slot')) {
+        // Drop on bank - return piece
+        returnPieceToBank(piece);
+      } else if(slotBelow && slotBelow.querySelector('.puzzle-piece') && piece.parentElement === bank) {
+        // Drop on occupied slot - swap pieces
+        const existingPiece = slotBelow.querySelector('.puzzle-piece');
+        returnPieceToBank(existingPiece);
+        placePiece(piece, slotBelow);
+      }
+      
+      // Cleanup
+      touchDraggedPiece = null;
+      touchStartY = null;
+      touchStartX = null;
+      touchOffsetX = null;
+      touchOffsetY = null;
+      
+      e.preventDefault();
+    }, { passive: false });
+    
+    // Handle touch cancel (e.g., if user switches apps)
+    piece.addEventListener('touchcancel', () => {
+      if(touchDraggedPiece === piece) {
+        piece.style.opacity = '1';
+        piece.style.transition = 'transform 0.2s, box-shadow 0.2s';
+        if(dragGhost) {
+          dragGhost.remove();
+          dragGhost = null;
+        }
+        slots.forEach(slot => {
+          slot.style.backgroundColor = 'rgba(255,255,255,0.5)';
+        });
+        bank.style.backgroundColor = 'rgba(255,255,255,0.3)';
+        touchDraggedPiece = null;
+        touchStartY = null;
+        touchStartX = null;
+        touchOffsetX = null;
+        touchOffsetY = null;
       }
     }, { passive: true });
     
-    piece.addEventListener('touchend', (e) => {
-      touchStartY = null;
-      touchStartX = null;
-    }, { passive: true });
-    
-    // Click handler for touch devices (when piece is in bank)
-    piece.addEventListener('click', (e) => {
-      if(isTouchDevice) {
-        e.stopPropagation();
-        if(piece.parentElement === bank) {
-          // Toggle selection
-          if(selectedPiece === piece) {
-            selectedPiece = null;
-            updateSelectedState();
-            piece.style.transform = 'scale(1)';
-            piece.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-          } else {
-            // Clear previous selection
-            if(selectedPiece) {
-              selectedPiece.style.transform = 'scale(1)';
-              selectedPiece.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-            }
-            selectedPiece = piece;
-            updateSelectedState();
-            piece.style.transform = 'scale(1.1)';
-            piece.style.boxShadow = '0 6px 15px rgba(255,127,191,0.5)';
-          }
-        } else if(piece.parentElement && piece.parentElement.classList.contains('puzzle-slot')) {
-          // Remove piece from slot back to bank
-          returnPieceToBank(piece);
-          if(selectedPiece === piece) {
-            selectedPiece = null;
-            updateSelectedState();
-          }
-        }
-      } else {
+    // Click handler for desktop (touch devices use drag)
+    if(!isTouchDevice) {
+      piece.addEventListener('click', (e) => {
         // Desktop: allow clicking pieces in slots to remove them back to bank
         if(piece.parentElement && piece.parentElement.classList.contains('puzzle-slot')) {
           e.stopPropagation();
           returnPieceToBank(piece);
         }
-      }
-    });
+      });
+    }
     
     // Desktop hover effects
     if(!isTouchDevice) {
@@ -309,17 +361,9 @@ export function initScene1(opts = {}) {
     bank.appendChild(piece);
   });
   
-  // Function to update visual state of selected piece
-  function updateSelectedState() {
-    pieces.forEach(p => {
-      if(p !== selectedPiece && p.parentElement === bank) {
-        p.style.transform = 'scale(1)';
-        p.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
-      }
-    });
-    
-    // Hide mobile hint when first piece is selected
-    if(mobileHint && selectedPiece && mobileHint.parentElement) {
+  // Hide mobile hint when first drag starts
+  function hideMobileHint() {
+    if(mobileHint && mobileHint.parentElement) {
       mobileHint.style.transition = 'opacity 0.3s';
       mobileHint.style.opacity = '0';
       setTimeout(() => {
@@ -369,12 +413,6 @@ export function initScene1(opts = {}) {
       piece.style.border = '2px solid rgba(0,0,0,0.1)';
     }
     
-    // Clear selection if this piece was selected
-    if(selectedPiece === piece) {
-      selectedPiece = null;
-      updateSelectedState();
-    }
-    
     checkComplete();
   }
   
@@ -385,10 +423,8 @@ export function initScene1(opts = {}) {
     }
     
     // Reset piece styling for bank
-    piece.style.width = 'clamp(80px, 12vw, 100px)';
-    piece.style.height = 'clamp(80px, 12vw, 100px)';
-    piece.style.minWidth = 'clamp(80px, 12vw, 100px)';
-    piece.style.minHeight = 'clamp(80px, 12vw, 100px)';
+    piece.style.width = '100px';
+    piece.style.height = '100px';
     piece.style.cursor = isTouchDevice ? 'pointer' : 'grab';
     piece.style.border = '2px solid rgba(0,0,0,0.1)';
     piece.style.boxShadow = '0 4px 10px rgba(0,0,0,0.1)';
@@ -413,11 +449,6 @@ export function initScene1(opts = {}) {
       }
     });
     
-    // Clear selection on mobile
-    if(isTouchDevice && selectedPiece) {
-      selectedPiece = null;
-      updateSelectedState();
-    }
   }
   
   function checkComplete() {
