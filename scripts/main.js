@@ -57,7 +57,7 @@ app.innerHTML = `
   </section>
 `;
 
-// simple helpers
+// simple helpers pin code 26201
 const acts = {
   act1: document.getElementById('act-1'),
   act2: document.getElementById('act-2'),
